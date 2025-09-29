@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2196F3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2196F3;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .week-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .week-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .week-btn:hover {
+            background: #1976D2;
+            transform: scale(1.1);
+        }
+
+        .week-display {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2196F3;
+            min-width: 120px;
+        }
+
+        .day-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .day-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid transparent;
+            padding: 12px 8px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .day-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        .day-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-1px);
+        }
+
+        .workout-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .exercise-item {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2196F3;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .exercise-name {
+            font-weight: 700;
+            font-size: 16px;
+            color: #2196F3;
+            margin-bottom: 5px;
+        }
+
+        .exercise-info {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .exercise-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .input-group input {
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            text-align: center;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+
+        .save-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .stats-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #2196F3;
+            color: white;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .no-exercises {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .exercise-inputs {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .input-group {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+            
+            .input-group label {
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+            
+            .input-group input {
+                width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💪 Workout Tracker</h1>
+            <div class="week-selector">
+                <button class="week-btn" onclick="changeWeek(-1)">←</button>
+                <div class="week-display" id="weekDisplay">Week 1</div>
+                <button class="week-btn" onclick="changeWeek(1)">→</button>
+            </div>
+        </div>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="showTab('workout')">Workout</button>
+            <button class="tab-btn" onclick="showTab('stats')">Stats</button>
+        </div>
+
+        <div id="workoutTab">
+            <div class="day-selector">
+                <button class="day-btn active" onclick="selectDay('Monday')">Mon</button>
+                <button class="day-btn" onclick="selectDay('Tuesday')">Tue</button>
+                <button class="day-btn" onclick="selectDay('Wednesday')">Wed</button>
+                <button class="day-btn" onclick="selectDay('Thursday')">Thu</button>
+                <button class="day-btn" onclick="selectDay('Friday')">Fri</button>
+                <button class="day-btn" onclick="selectDay('Saturday')">Sat</button>
+            </div>
+
+            <div class="workout-container" id="workoutContainer">
+                <!-- Exercises will be loaded here -->
+            </div>
+
+            <button class="save-btn" onclick="saveWorkout()">💾 Save Workout</button>
+        </div>
+
+        <div id="statsTab" class="hidden">
+            <div class="stats-container">
+                <div class="stats-grid" id="statsGrid">
+                    <!-- Stats will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Workout data from your spreadsheet
+        const workoutSchedule = {
+            'Monday': [
+                {'name': 'Hollow body holds', 'sets_info': '3 sets'},
+                {'name': 'Shoulder pin counter rotations', 'sets_info': '3 sets'},
+                {'name': 'Bench Press', 'sets_info': '4 sets'},
+                {'name': 'Rear Delt cross arm cable pulls', 'sets_info': '4 sets'},
+                {'name': 'Landmine overhead press', 'sets_info': '4 sets, 1 for each leg/arm combination'},
+                {'name': 'landmine oblique twists', 'sets_info': '4 sets'},
+                {'name': 'Medicine Ball Rotational Slams', 'sets_info': '4 sets'},
+                {'name': 'Bear Crawl / Lizard Crawl', 'sets_info': '2 sets each, 15 yards'},
+                {'name': 'Hack Squats + calf raise', 'sets_info': '4 sets'},
+                {'name': 'agility ladder drill', 'sets_info': '6 runs'},
+                {'name': 'skater jumps', 'sets_info': '4 sets'},
+                {'name': '5 x 12 second sprints', 'sets_info': ''}
+            ],
+            'Tuesday': [
+                {'name': '6 minutes jump rope', 'sets_info': ''},
+                {'name': 'Jefferson Curls', 'sets_info': '3 sets x 6'},
+                {'name': 'German Hangs', 'sets_info': '4 holds'},
+                {'name': 'Weighted Pullups', 'sets_info': '4 sets'},
+                {'name': 'Weighted Dips', 'sets_info': '4 sets'},
+                {'name': 'Front lever', 'sets_info': '5 tucks, 5 hold attempts'},
+                {'name': 'Pike pushups', 'sets_info': '4 sets'},
+                {'name': 'Heavy Back Extensions', 'sets_info': '4 sets'},
+                {'name': 'Dragon Flags', 'sets_info': '3 sets'},
+                {'name': 'Rope pull deadbugs', 'sets_info': '3 sets'},
+                {'name': 'Kettlebell Planks', 'sets_info': '3 sets'},
+                {'name': '8 minute boxing round', 'sets_info': '40/20'}
+            ],
+            'Wednesday': [
+                {'name': 'Knee banded single leg aeroplanes', 'sets_info': '3x3x2 twists'},
+                {'name': 'Cossack Squats', 'sets_info': '3x4x2'},
+                {'name': 'Facepulls', 'sets_info': 'x3'},
+                {'name': 'Wrist pronations and flexion', 'sets_info': 'x3'},
+                {'name': 'Deep Barbell back squats', 'sets_info': '5 sets'},
+                {'name': 'elevated 1-leg bridge', 'sets_info': '4 sets'},
+                {'name': 'Hip Flexor Curls', 'sets_info': '3 sets'},
+                {'name': 'Weighted Bulgarian split jumps', 'sets_info': '4 sets x 16'},
+                {'name': 'Nordic Curls', 'sets_info': '3 sets'},
+                {'name': 'Leg extensions', 'sets_info': '4 sets'},
+                {'name': 'Calf raises', 'sets_info': '4 sets'},
+                {'name': '6 minute cycle sprint', 'sets_info': ''}
+            ],
+            'Thursday': [
+                {'name': 'Hollow body holds', 'sets_info': '3 sets'},
+                {'name': 'Shoulder pin counter rotations', 'sets_info': '3 sets'},
+                {'name': 'Bench Press', 'sets_info': '4 sets'},
+                {'name': 'Cross Body control', 'sets_info': '4 sets'},
+                {'name': 'Landmine overhead press', 'sets_info': '4 sets, 1 for each leg/arm combination'},
+                {'name': 'landmine oblique twists', 'sets_info': '4 sets'},
+                {'name': 'Medicine Ball Rotational Slams', 'sets_info': '4 sets'},
+                {'name': 'Bear Crawl / Lizard Crawl', 'sets_info': '2 sets each'},
+                {'name': 'bent over chest row', 'sets_info': '4 sets'},
+                {'name': 'Band assisted jumps', 'sets_info': '3 sets'},
+                {'name': 'Copenhagen planks', 'sets_info': '2 sets per side'},
+                {'name': '1 mile run', 'sets_info': ''}
+            ],
+            'Friday': [
+                {'name': '6 minutes jump rope', 'sets_info': ''},
+                {'name': 'Jefferson Curls', 'sets_info': '3 sets x 6'},
+                {'name': 'German Hangs', 'sets_info': '4 holds'},
+                {'name': 'Weighted Pullups', 'sets_info': '4 sets'},
+                {'name': 'Weighted Dips', 'sets_info': '4 sets'},
+                {'name': 'Front lever', 'sets_info': '5 tucks, 5 hold attempts'},
+                {'name': 'Pike pushups', 'sets_info': '4 sets'},
+                {'name': 'Lateral Cable Raises', 'sets_info': '3 sets - hip height start'},
+                {'name': 'Low to high VIPR chops', 'sets_info': '3 sets'},
+                {'name': 'Ab rollouts', 'sets_info': '3 sets'},
+                {'name': 'pallof press', 'sets_info': '3 sets'},
+                {'name': 'Tennis groundstroke practice Loaded', 'sets_info': 'use cones, forehand to middle, backhand to middle, 4 reps 3 sets'}
+            ],
+            'Saturday': [
+                {'name': 'Knee banded single leg aeroplanes', 'sets_info': '3x3x2 twists'},
+                {'name': 'Cossack Squats', 'sets_info': '3x4x2'},
+                {'name': 'Facepulls', 'sets_info': 'x3'},
+                {'name': 'Wrist pronations and flexion', 'sets_info': 'x3'},
+                {'name': 'Bulgarian Front Squats', 'sets_info': '4 sets'},
+                {'name': 'Hip Thrusts', 'sets_info': '4 sets'},
+                {'name': 'Hip Flexor Curls', 'sets_info': '3 sets'},
+                {'name': 'Deficit drop box jumps', 'sets_info': '4 sets x 2'},
+                {'name': 'Copenhagen planks', 'sets_info': '2 sets per side'},
+                {'name': 'Laying Hamstring Curl', 'sets_info': '3 sets'},
+                {'name': 'Calf raises', 'sets_info': '4 sets'},
+                {'name': 'Sled Push+Pull', 'sets_info': '3 sets of 2, light and heavy'}
+            ]
+        };
+
+        let currentWeek = 1;
+        let currentDay = 'Monday';
+        let workoutData = JSON.parse(localStorage.getItem('workoutData')) || {};
+
+        function changeWeek(direction) {
+            currentWeek = Math.max(1, currentWeek + direction);
+            document.getElementById('weekDisplay').textContent = `Week ${currentWeek}`;
+            loadWorkout();
+        }
+
+        function selectDay(day) {
+            // Remove active class from all day buttons
+            document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            currentDay = day;
+            loadWorkout();
+        }
+
+        function showTab(tab) {
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Hide all tabs
+            document.getElementById('workoutTab').classList.toggle('hidden', tab !== 'workout');
+            document.getElementById('statsTab').classList.toggle('hidden', tab !== 'stats');
+            
+            if (tab === 'stats') {
+                loadStats();
+            }
+        }
+
+        function loadWorkout() {
+            const container = document.getElementById('workoutContainer');
+            const exercises = workoutSchedule[currentDay] || [];
+            
+            if (exercises.length === 0) {
+                container.innerHTML = '<div class="no-exercises">No exercises scheduled for this day</div>';
+                return;
+            }
+
+            container.innerHTML = exercises.map((exercise, index) => {
+                const exerciseKey = `${currentWeek}-${currentDay}-${index}`;
+                const savedData = workoutData[exerciseKey] || { weight: '', reps: '', sets: '' };
+                
+                // Determine if this exercise typically uses weight
+                const usesWeight = isWeightExercise(exercise.name);
+                
+                return `
+                    <div class="exercise-item">
+                        <div class="exercise-name">${exercise.name}</div>
+                        ${exercise.sets_info ? `<div class="exercise-info">Suggested: ${exercise.sets_info}</div>` : ''}
+                        <div class="exercise-inputs">
+                            ${usesWeight ? `
+                                <div class="input-group">
+                                    <label>Weight (kg)</label>
+                                    <input type="number" step="0.5" 
+                                           value="${savedData.weight}" 
+                                           data-exercise="${exerciseKey}" 
+                                           data-field="weight"
+                                           placeholder="0">
+                                </div>
+                            ` : `
+                                <div class="input-group">
+                                    <label>Duration/Distance</label>
+                                    <input type="text" 
+                                           value="${savedData.weight}" 
+                                           data-exercise="${exerciseKey}" 
+                                           data-field="weight"
+                                           placeholder="e.g. 30s, 10m">
+                                </div>
+                            `}
+                            <div class="input-group">
+                                <label>Reps/Time</label>
+                                <input type="text" 
+                                       value="${savedData.reps}" 
+                                       data-exercise="${exerciseKey}" 
+                                       data-field="reps"
+                                       placeholder="${usesWeight ? '10' : '30s'}">
+                            </div>
+                            <div class="input-group">
+                                <label>Sets</label>
+                                <input type="number" 
+                                       value="${savedData.sets}" 
+                                       data-exercise="${exerciseKey}" 
+                                       data-field="sets"
+                                       placeholder="3">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add event listeners for auto-save
+            container.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', autoSave);
+            });
+        }
+
+        function isWeightExercise(exerciseName) {
+            const weightExercises = [
+                'bench press', 'squat', 'deadlift', 'pullup', 'dip', 'row', 'press',
+                'curl', 'extension', 'hack squat', 'hip thrust', 'landmine', 'cable'
+            ];
+            const name = exerciseName.toLowerCase();
+            return weightExercises.some(exercise => name.includes(exercise));
+        }
+
+        function autoSave(event) {
+            const exerciseKey = event.target.dataset.exercise;
+            const field = event.target.dataset.field;
+            const value = event.target.value;
+
+            if (!workoutData[exerciseKey]) {
+                workoutData[exerciseKey] = {};
+            }
+            workoutData[exerciseKey][field] = value;
+
+            localStorage.setItem('workoutData', JSON.stringify(workoutData));
+        }
+
+        function saveWorkout() {
+            // Data is already saved via auto-save, just show confirmation
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Saved!';
+            btn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+            }, 2000);
+        }
+
+        function loadStats() {
+            const statsGrid = document.getElementById('statsGrid');
+            
+            // Calculate stats
+            const totalWorkouts = Object.keys(workoutData).length;
+            const completedWorkouts = Object.values(workoutData).filter(data => 
+                data.sets && data.sets !== ''
+            ).length;
+            
+            const currentWeekWorkouts = Object.keys(workoutData).filter(key => 
+                key.startsWith(`${currentWeek}-`)
+            ).length;
+            
+            const totalVolume = Object.values(workoutData).reduce((sum, data) => {
+                const weight = parseFloat(data.weight) || 0;
+                const reps = parseFloat(data.reps) || 0;
+                const sets = parseFloat(data.sets) || 0;
+                return sum + (weight * reps * sets);
+            }, 0);
+
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${completedWorkouts}</div>
+                    <div class="stat-label">Completed Exercises</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${currentWeek}</div>
+                    <div class="stat-label">Current Week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${currentWeekWorkouts}</div>
+                    <div class="stat-label">This Week's Exercises</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${Math.round(totalVolume)}</div>
+                    <div class="stat-label">Total Volume (kg)</div>
+                </div>
+            `;
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWorkout();
+        });
+
+        // Service Worker for offline functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    }, function(err) {
+                        console.log('ServiceWorker registration failed');
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
